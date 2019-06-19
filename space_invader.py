@@ -11,34 +11,43 @@ os.system('clear')
 class Ship():
     def __init__(self):
         self.ship = '_|_'
-        self.x_axis = 4 # last row of the matrix
-        self.y_axis = 9 # ship start in the center
-
-
+        self.ship_x_axis = 4 # ship start in the center
+        self.ship_y_axis = 9 # last row of the matrix
 
 class Laser(Ship):
     def __init__(self):
         Ship.__init__(self)
         self.laser = " * "
 
-    def fire(self, x_axis, key_input):
+    def fire(self, ship_x_axis, key_input):
         if key_input == "\033[A":
-            shot_range = self.y_axis - 1
+            shot_range = self.ship_y_axis - 1
             while shot_range != 0:
                 # convert the cell in a laser " * "
-                self.cells[shot_range][x_axis] = self.laser
+                self.cells[shot_range][ship_x_axis] = self.laser
                 self.refresh_screen()
                 time.sleep(0.07)
 
                 # clear the cell that had a laser
-                self.cells[shot_range][x_axis] = "   "
+                self.cells[shot_range][ship_x_axis] = "   "
                 self.refresh_screen()
                 # time.sleep(0.1)
                 shot_range -= 1
 
-class Universe(Laser):
-    def __init__(self):# 0      1      2      3      4      5      6      7      8      9
+class Enemy(Laser):
+    def __init__(self):
         Laser.__init__(self)
+        self.enemy = '<*>'
+        self.enemy_x_axis = 0
+        self.enemy_y_axis = 5
+
+    def update_enemy_position(self, enemy_x_axis, enemy_y_axis):
+        self.cells[enemy_x_axis][enemy_y_axis] = self.enemy
+
+
+class Universe(Enemy):
+    def __init__(self):# 0      1      2      3      4      5      6      7      8      9
+        Enemy.__init__(self)
         self.cells = [["   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   "]   # 0
                      ,["   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   "]   # 1
                      ,["   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   ", "   "]   # 2
@@ -64,8 +73,8 @@ class Universe(Laser):
 
     def refresh_screen(self):
         os.system('clear')
-        print('x_axis --> ', self.x_axis)
-        print('y_axis --> ', self.y_axis)
+        print('ship_x_axis --> ', self.ship_x_axis)
+        print('ship_y_axis --> ', self.ship_y_axis)
         self.display()
 
     # Arrows representation on keyboard
@@ -77,20 +86,19 @@ class Universe(Laser):
         key_input = input()
         return key_input
 
-    def update_ship_x_axis_position(self, x_axis, key_input):
+    def update_ship_ship_x_axis_position(self, ship_x_axis, key_input):
         if key_input == "\033[D":
-            self.x_axis -= 1
+            self.ship_x_axis -= 1
         elif key_input == "\033[C":
-            self.x_axis += 1
-        return self.x_axis
+            self.ship_x_axis += 1
+        return self.ship_x_axis
 
-    def update_ship_position(self, x_axis):
-
+    def update_ship_position(self, ship_x_axis):
         # Cleaning all possition the ship was prior
-        for i in range(0, len(universe.cells[9])):
-            universe.cells[9][i] = "   "
-        # Assigning new ship_x_axis_position
-        universe.cells[9][self.x_axis] = self.ship
+        for i in range(0, len(self.cells[9])):
+            self.cells[9][i] = "   "
+        # Assigning new ship_ship_x_axis_position
+        self.cells[9][self.ship_x_axis] = self.ship
 
 
 
@@ -108,8 +116,10 @@ while True:
     key_input = universe.keyboard_input()
 
     # Move ship
-    universe.x_axis = universe.update_ship_x_axis_position(universe.x_axis, key_input)
-    universe.update_ship_position(universe.x_axis)
+    universe.ship_x_axis = universe.update_ship_ship_x_axis_position(universe.ship_x_axis, key_input)
+    universe.update_ship_position(universe.ship_x_axis)
 
     # Fire
-    universe.fire(universe.x_axis, key_input)
+    universe.fire(universe.ship_x_axis, key_input)
+
+    universe.update_enemy_position(universe.enemy_x_axis, universe.enemy_y_axis)
