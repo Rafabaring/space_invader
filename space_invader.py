@@ -1,8 +1,12 @@
-import keyboard
+# import keyboard
 import time
-# Controlling keyboard
-from pynput.keyboard import Key, Controller
-keyboard = Controller()
+import random
+
+# Importing pygame for keyboard input handling
+import pygame
+from pygame.locals import *
+pygame.init()
+
 
 import os
 os.system('clear')
@@ -20,7 +24,7 @@ class Laser(Ship):
         self.laser = " * "
 
     def fire(self, ship_x_axis, key_input):
-        if key_input == "\033[A":
+        if key_input == 'up': # "\033[A"
             shot_range = self.ship_y_axis - 1
             while shot_range != 0:
                 # convert the cell in a laser " * "
@@ -42,6 +46,7 @@ class Enemy(Laser):
         self.enemy_y_axis = 5
 
     def update_enemy_position(self, enemy_x_axis, enemy_y_axis):
+        self.enemy_y_axis = random.randint(1,9)
         self.cells[enemy_x_axis][enemy_y_axis] = self.enemy
 
 
@@ -82,14 +87,14 @@ class Universe(Enemy):
     # down - "\033[B"
     # left - "\033[D"
     # right - "\033[C"
-    def keyboard_input(self):
-        key_input = input()
-        return key_input
+    # def keyboard_input(self):
+    #     key_input = input()
+    #     return key_input
 
-    def update_ship_ship_x_axis_position(self, ship_x_axis, key_input):
-        if key_input == "\033[D":
+    def update_ship_x_axis_position(self, ship_x_axis, key_input):
+        if key_input == 'left':     #left "\033[D"
             self.ship_x_axis -= 1
-        elif key_input == "\033[C":
+        elif key_input == 'right':   #right "\033[C"
             self.ship_x_axis += 1
         return self.ship_x_axis
 
@@ -102,24 +107,45 @@ class Universe(Enemy):
 
 
 
-
 ## ------------------------------------------------------------------------------------
 
 
 universe = Universe()
 
 
+def user_input():
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_LEFT:
+                 move = 'left'
+                 return move
+        if event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_RIGHT:
+                 move = 'right'
+                 return move
+        if event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_UP:
+                 move = 'up'
+                 return move
+
+
+counter = 0
 while True:
     universe.refresh_screen()
+    move = user_input()
+    time.sleep(0.03)
+    counter += 1
+    print(counter)
 
     # Player command
-    key_input = universe.keyboard_input()
+    # key_input = universe.keyboard_input()
+
 
     # Move ship
-    universe.ship_x_axis = universe.update_ship_ship_x_axis_position(universe.ship_x_axis, key_input)
+    universe.ship_x_axis = universe.update_ship_x_axis_position(universe.ship_x_axis, move)
     universe.update_ship_position(universe.ship_x_axis)
 
     # Fire
-    universe.fire(universe.ship_x_axis, key_input)
+    universe.fire(universe.ship_x_axis, move)
 
     universe.update_enemy_position(universe.enemy_x_axis, universe.enemy_y_axis)
