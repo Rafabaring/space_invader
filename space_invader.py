@@ -42,12 +42,30 @@ class Enemy(Laser):
     def __init__(self):
         Laser.__init__(self)
         self.enemy = '<*>'
-        self.enemy_x_axis = 0
+        self.enemy_x_axis = 4
         self.enemy_y_axis = 5
+        self.counter_enemy = 0
+
 
     def update_enemy_position(self, enemy_x_axis, enemy_y_axis):
-        self.enemy_y_axis = random.randint(1,9)
+
         self.cells[enemy_x_axis][enemy_y_axis] = self.enemy
+        self.refresh_screen()
+
+        # A combination of counter_enemy and time.sleep will determine how fast the ship move - how challenging the game will be
+        if self.counter_enemy <= 7:
+            self.enemy_x_axis = enemy_x_axis
+            self.enemy_y_axis = enemy_y_axis
+            self.counter_enemy += 1
+        else:
+            temp_x_position = random.randint(1,3)
+            temp_y_position = random.randint(1,9)
+            self.enemy_x_axis = temp_x_position
+            self.enemy_y_axis = temp_y_position
+            self.counter_enemy = 0
+
+        time.sleep(0.05)
+        self.cells[enemy_x_axis][enemy_y_axis] = '   '
 
 
 class Universe(Enemy):
@@ -87,15 +105,14 @@ class Universe(Enemy):
     # down - "\033[B"
     # left - "\033[D"
     # right - "\033[C"
-    # def keyboard_input(self):
-    #     key_input = input()
-    #     return key_input
 
     def update_ship_x_axis_position(self, ship_x_axis, key_input):
-        if key_input == 'left':     #left "\033[D"
+        if key_input == 'left':
             self.ship_x_axis -= 1
-        elif key_input == 'right':   #right "\033[C"
+            self.refresh_screen()
+        elif key_input == 'right':
             self.ship_x_axis += 1
+            self.refresh_screen()
         return self.ship_x_axis
 
     def update_ship_position(self, ship_x_axis):
@@ -108,10 +125,6 @@ class Universe(Enemy):
 
 
 ## ------------------------------------------------------------------------------------
-
-
-universe = Universe()
-
 
 def user_input():
     for event in pygame.event.get():
@@ -128,18 +141,16 @@ def user_input():
                  move = 'up'
                  return move
 
+universe = Universe()
 
 counter = 0
 while True:
     universe.refresh_screen()
-    move = user_input()
     time.sleep(0.03)
-    counter += 1
-    print(counter)
+    move = user_input()
 
-    # Player command
-    # key_input = universe.keyboard_input()
-
+    # counter += 1
+    # print(counter)
 
     # Move ship
     universe.ship_x_axis = universe.update_ship_x_axis_position(universe.ship_x_axis, move)
