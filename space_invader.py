@@ -22,21 +22,28 @@ class Laser(Ship):
     def __init__(self):
         Ship.__init__(self)
         self.laser = " * "
+        self.fire_trigger = 9
+        self.shot_range = self.ship_y_axis - 1
+        self.laser_x_position = 0
 
     def fire(self, ship_x_axis, key_input):
-        if key_input == 'up': # "\033[A"
-            shot_range = self.ship_y_axis - 1
-            while shot_range != 0:
-                # convert the cell in a laser " * "
-                self.cells[shot_range][ship_x_axis] = self.laser
-                self.refresh_screen()
-                time.sleep(0.07)
+        if key_input == 'up':
+            self.laser_x_position = ship_x_axis
+            self.fire_trigger = 0
+            self.shot_range = self.ship_y_axis - 1
 
-                # clear the cell that had a laser
-                self.cells[shot_range][ship_x_axis] = "   "
-                self.refresh_screen()
-                # time.sleep(0.1)
-                shot_range -= 1
+        if self.fire_trigger <= 8:
+            self.cells[self.shot_range][self.laser_x_position] = self.laser
+            self.refresh_screen()
+            time.sleep(0.03)
+
+            # clear the cell that had a laser
+            self.cells[self.shot_range][self.laser_x_position] = "   "
+            self.refresh_screen()
+            self.shot_range -= 1
+
+        self.fire_trigger += 1
+
 
 class Enemy(Laser):
     def __init__(self):
@@ -64,9 +71,9 @@ class Enemy(Laser):
             self.enemy_y_axis = temp_y_position
             self.counter_enemy = 0
 
-        time.sleep(0.05)
-        self.cells[enemy_x_axis][enemy_y_axis] = '   '
 
+        self.cells[enemy_x_axis][enemy_y_axis] = '   '
+        time.sleep(0.05)
 
 class Universe(Enemy):
     def __init__(self):# 0      1      2      3      4      5      6      7      8      9
@@ -98,13 +105,10 @@ class Universe(Enemy):
         os.system('clear')
         print('ship_x_axis --> ', self.ship_x_axis)
         print('ship_y_axis --> ', self.ship_y_axis)
+        print('counter enemy -->', self.counter_enemy)
+        print('fire trigger -->', self.fire_trigger)
         self.display()
 
-    # Arrows representation on keyboard
-    # up - "\033[A"
-    # down - "\033[B"
-    # left - "\033[D"
-    # right - "\033[C"
 
     def update_ship_x_axis_position(self, ship_x_axis, key_input):
         if key_input == 'left':
@@ -140,6 +144,10 @@ def user_input():
              if event.key == pygame.K_UP:
                  move = 'up'
                  return move
+        if event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_DOWN:
+                 move = 'down'
+                 return move
 
 universe = Universe()
 
@@ -149,8 +157,6 @@ while True:
     time.sleep(0.03)
     move = user_input()
 
-    # counter += 1
-    # print(counter)
 
     # Move ship
     universe.ship_x_axis = universe.update_ship_x_axis_position(universe.ship_x_axis, move)
@@ -159,4 +165,6 @@ while True:
     # Fire
     universe.fire(universe.ship_x_axis, move)
 
+
+    # Enemy
     universe.update_enemy_position(universe.enemy_x_axis, universe.enemy_y_axis)
